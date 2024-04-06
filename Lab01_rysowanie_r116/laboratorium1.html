@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+ <!-- The previous line tells the browser, that the page uses the HTML5 standard. -->
+ 
+ <html>
+     <head>
+         <title>Example 03 - Rotation</title>
+         <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+ 
+         <!-- The following meta line optimizes the site for mobile devices. It sets the viewport size
+       to the screen size, so it will be displayed maximized, but unscaled. -->
+         <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1">
+         <style type="text/css">
+             body {
+                 /* Set the background color of the HTML page to black */
+                 background-color: #000000;
+ 
+                 /* Hide oversized content. This prevents the scroll bars. */
+                 overflow: hidden;
+             }
+         </style>
+         <!-- Include two libraries
+       1. Three.js (core library)
+       2. Detector.js (checks the browsers WebGL capabilities) -->
+         <script src="three.js"></script>
+         <script src="Detector.js"></script>
+     </head>
+     <body>
+         <!-- This is the DIV element which will contain the WebGL canvas. To be identifiable lateron,
+              the id 'WebGLCanvas' is applied to it. -->
+         <div id="WebGLCanvas"> </div>
+ 
+         <!-- This JavaScript block encloses the Three.js commands -->
+         <script>
+           // Global scene object
+           var scene;
+
+           // Global camera object
+           var camera;
+
+           // Global mesh object of the triangle
+           var triangleMesh;
+
+           // Global mesh object of the square
+           var squareMesh;
+
+           var circleMesh;
+
+           var circleMesh2;
+
+           var squareMesh2;
+
+           // Initialize the scene
+           initializeScene();
+
+           // Instead of calling 'renderScene()', we call a new function: 'animateScene()'. It will
+           // update the rotation values and call 'renderScene()' in a loop.
+
+           // Animate the scene
+           animateScene();
+
+           /**
+            * Initialze the scene.
+            */
+           function initializeScene(){
+               // Check whether the browser supports WebGL. If so, instantiate the hardware accelerated
+               // WebGL renderer. For antialiasing, we have to enable it. The canvas renderer uses
+               // antialiasing by default.
+               // The approach of multiplse renderers is quite nice, because your scene can also be
+               // viewed in browsers, which don't support WebGL. The limitations of the canvas renderer
+               // in contrast to the WebGL renderer will be explained in the tutorials, when there is a
+               // difference.
+               if(Detector.webgl){
+                   renderer = new THREE.WebGLRenderer({antialias:true});
+
+               // If its not supported, instantiate the canvas renderer to support all non WebGL
+               // browsers
+               } else {
+                   renderer = new THREE.CanvasRenderer();
+               }
+
+               // Set the background color of the renderer to black, with full opacity
+               renderer.setClearColor(0x000000, 1);
+
+               // Get the size of the inner window (content area) to create a full size renderer
+               canvasWidth = window.innerWidth;
+               canvasHeight = window.innerHeight;
+
+               // Set the renderers size to the content areas size
+               renderer.setSize(canvasWidth, canvasHeight);
+
+               // Get the DIV element from the HTML document by its ID and append the renderers DOM
+               // object to it
+               document.getElementById("WebGLCanvas").appendChild(renderer.domElement);
+
+               // Create the scene, in which all objects are stored (e. g. camera, lights,
+               // geometries, ...)
+               scene = new THREE.Scene();
+
+               // Now that we have a scene, we want to look into it. Therefore we need a camera.
+               // Three.js offers three camera types:
+               //  - PerspectiveCamera (perspective projection)
+               //  - OrthographicCamera (parallel projection)
+               //  - CombinedCamera (allows to switch between perspective / parallel projection
+               //    during runtime)
+               // In this example we create a perspective camera. Parameters for the perspective
+               // camera are ...
+               // ... field of view (FOV),
+               // ... aspect ratio (usually set to the quotient of canvas width to canvas height)
+               // ... near and
+               // ... far.
+               // Near and far define the cliping planes of the view frustum. Three.js provides an
+               // example (http://mrdoob.github.com/three.js/examples/
+               // -> canvas_camera_orthographic2.html), which allows to play around with these
+               // parameters.
+               // The camera is moved 10 units towards the z axis to allow looking to the center of
+               // the scene.
+               // After definition, the camera has to be added to the scene.
+               camera = new THREE.PerspectiveCamera(45, canvasWidth / canvasHeight, 1, 100);
+               camera.position.set(0, 0, 10);
+               camera.lookAt(scene.position);
+               scene.add(camera);
+
+                // domek
+                var triangleGeometry = new THREE.Geometry();
+                triangleGeometry.vertices.push(new THREE.Vector3( 0.0,  0.5, 0.0));
+                triangleGeometry.vertices.push(new THREE.Vector3(-0.5, -0.5, 0.0));
+                triangleGeometry.vertices.push(new THREE.Vector3( 0.5, -0.5, 0.0));
+                triangleGeometry.faces.push(new THREE.Face3(0, 1, 2));
+ 
+                var triangleMaterial = new THREE.MeshBasicMaterial({
+                    color:0xf54242,
+                    side:THREE.DoubleSide
+                });
+
+                var triangleMesh = new THREE.Mesh(triangleGeometry, triangleMaterial);
+                triangleMesh.position.set(4.0, 2.0, 3.0);
+                scene.add(triangleMesh);
+
+                var squareGeometry = new THREE.Geometry();
+                squareGeometry.vertices.push(new THREE.Vector3(-0.5,  0.5, 0.0));
+                squareGeometry.vertices.push(new THREE.Vector3( 0.5,  0.5, 0.0));
+                squareGeometry.vertices.push(new THREE.Vector3( 0.5, -0.5, 0.0));
+                squareGeometry.vertices.push(new THREE.Vector3(-0.5, -0.5, 0.0));
+				squareGeometry.faces.push(new THREE.Face3(0, 1, 2));
+				squareGeometry.faces.push(new THREE.Face3(0, 2, 3));
+ 
+                var squareMaterial = new THREE.MeshBasicMaterial({
+                    color:0x4269f5,
+                    side:THREE.DoubleSide
+                });
+ 
+                var squareMesh = new THREE.Mesh(squareGeometry, squareMaterial);
+                squareMesh.position.set(4.0, 1.0, 3.0);
+                scene.add(squareMesh);    
+            
+
+                 //choinka
+                 // t1
+                 var triangleGeometry = new THREE.Geometry();
+                 triangleGeometry.vertices.push(new THREE.Vector3( 0.0,  0.5, 0.0));
+                 triangleGeometry.vertices.push(new THREE.Vector3(-0.5, -0.5, 0.0));
+                 triangleGeometry.vertices.push(new THREE.Vector3( 0.5, -0.5, 0.0));
+                 triangleGeometry.faces.push(new THREE.Face3(0, 1, 2));
+
+                 var triangleMaterial = new THREE.MeshBasicMaterial({
+                     color:0x54f542,
+                     side:THREE.DoubleSide
+                 });
+ 
+                 var triangleMesh = new THREE.Mesh(triangleGeometry, triangleMaterial);
+                 triangleMesh.position.set(1.0, 2.5, 2.0);
+                 scene.add(triangleMesh);
+
+                // t2
+                 var triangleGeometry = new THREE.Geometry();
+                 triangleGeometry.vertices.push(new THREE.Vector3( 0.0,  0.5, 0.0));
+                 triangleGeometry.vertices.push(new THREE.Vector3(-0.5, -0.5, 0.0));
+                 triangleGeometry.vertices.push(new THREE.Vector3( 0.5, -0.5, 0.0));
+                 triangleGeometry.faces.push(new THREE.Face3(0, 1, 2));
+
+                 var triangleMaterial = new THREE.MeshBasicMaterial({
+                     color:0x54f542,
+                     side:THREE.DoubleSide
+                 });
+ 
+                 var triangleMesh = new THREE.Mesh(triangleGeometry, triangleMaterial);
+                 triangleMesh.position.set(1.0, 2.0, 2.0);
+                 scene.add(triangleMesh);
+
+                // t3
+                var triangleGeometry = new THREE.Geometry();
+                triangleGeometry.vertices.push(new THREE.Vector3( 0.0,  0.5, 0.0));
+                triangleGeometry.vertices.push(new THREE.Vector3(-0.5, -0.5, 0.0));
+                triangleGeometry.vertices.push(new THREE.Vector3( 0.5, -0.5, 0.0));
+                triangleGeometry.faces.push(new THREE.Face3(0, 1, 2));
+
+                var triangleMaterial = new THREE.MeshBasicMaterial({
+                    color:0x54f542,
+                    side:THREE.DoubleSide
+                });
+ 
+                var triangleMesh = new THREE.Mesh(triangleGeometry, triangleMaterial);
+                triangleMesh.position.set(1.0, 1.5, 2.0);
+                scene.add(triangleMesh);
+
+                 //korzen
+                var squareGeometry = new THREE.Geometry();
+                squareGeometry.vertices.push(new THREE.Vector3(-0.25,  0.25, 0.0));
+                squareGeometry.vertices.push(new THREE.Vector3( 0.25,  0.25, 0.0));
+                squareGeometry.vertices.push(new THREE.Vector3( 0.25, -0.25, 0.0));
+                squareGeometry.vertices.push(new THREE.Vector3(-0.25, -0.25, 0.0));
+				squareGeometry.faces.push(new THREE.Face3(0, 1, 2));
+				squareGeometry.faces.push(new THREE.Face3(0, 2, 3));
+ 
+                var squareMaterial = new THREE.MeshBasicMaterial({
+                    color:0x753914,
+                    side:THREE.DoubleSide
+                });
+ 
+                var squareMesh = new THREE.Mesh(squareGeometry, squareMaterial);
+                squareMesh.position.set(1.0, 0.75, 2.0);
+                scene.add(squareMesh);
+
+               //koło 1
+               var circleGeometry = new THREE.CircleGeometry( 0.5, 16 ); 
+               var circleMaterial = new THREE.MeshBasicMaterial( { 
+                 color: 0xde2f14,
+               } ); 
+               circleMesh = new THREE.Mesh( circleGeometry, circleMaterial );
+               circleMesh.position.set(-8.0, -3.0, -1.0) 
+               scene.add( circleMesh );
+
+               //koło 2
+               var circleGeometry2 = new THREE.CircleGeometry( 0.5, 16 ); 
+               var circleMaterial2 = new THREE.MeshBasicMaterial( { 
+                 color: 0xde2f14,
+               } ); 
+               circleMesh2 = new THREE.Mesh( circleGeometry2, circleMaterial2 );
+               circleMesh2.position.set(-6.0, -3.0, -1.0) 
+               scene.add( circleMesh2 );
+
+               //nadwozie
+               var squareGeometry2 = new THREE.Geometry();
+               squareGeometry2.vertices.push(new THREE.Vector3(-1.5,  1.0, 0.0));
+               squareGeometry2.vertices.push(new THREE.Vector3( 1.5,  1.0, 0.0));
+               squareGeometry2.vertices.push(new THREE.Vector3( 1.5, -1.0, 0.0));
+               squareGeometry2.vertices.push(new THREE.Vector3(-1.5, -1.0, 0.0));
+               squareGeometry2.faces.push(new THREE.Face3(0, 1, 2));
+			   squareGeometry2.faces.push(new THREE.Face3(0, 2, 3));
+
+               var squareMaterial2 = new THREE.MeshBasicMaterial({
+                   color:0xf5ed07,
+                   side:THREE.DoubleSide
+               });
+
+               squareMesh2 = new THREE.Mesh(squareGeometry2, squareMaterial2);
+               squareMesh2.position.set(-7.0, -1.5, -1.0);
+               scene.add(squareMesh2);  
+               
+               //wirójąca choinka
+               var pyramidGeometry = new THREE.CylinderGeometry(1.0, 1.5, 1.0, 32, false); 
+
+               for(i = 0; i < pyramidGeometry.faces.length; i++){ 
+                   if(pyramidGeometry.faces[i] instanceof THREE.Face4){ 
+                       pyramidGeometry.faces[i].vertexColors[0] = new THREE.Color(0x18ab3a); 
+                       if((i % 2) == 0){ 
+                           pyramidGeometry.faces[i].vertexColors[1] = new THREE.Color(0x159432); 
+                           pyramidGeometry.faces[i].vertexColors[2] = new THREE.Color(0x159432); 
+                       } else { 
+                           pyramidGeometry.faces[i].vertexColors[1] = new THREE.Color(0x107327); 
+                           pyramidGeometry.faces[i].vertexColors[2] = new THREE.Color(0x107327); 
+                       } 
+                       pyramidGeometry.faces[i].vertexColors[3] = new THREE.Color(0x159432); 
+                   } else { 
+                       pyramidGeometry.faces[i].vertexColors[0] = new THREE.Color(0x0a4d19); 
+                       pyramidGeometry.faces[i].vertexColors[1] = new THREE.Color(0x107327); 
+                       pyramidGeometry.faces[i].vertexColors[2] = new THREE.Color(0x159432); 
+                   } 
+               } 
+               var pyramidMaterial = new THREE.MeshBasicMaterial({ 
+                   vertexColors:THREE.VertexColors, 
+                   side:THREE.DoubleSide 
+               }); 
+               pyramidMesh = new THREE.Mesh(pyramidGeometry, pyramidMaterial); 
+               pyramidMesh.position.set(-5.5, 0.8, 0.0); 
+               scene.add(pyramidMesh); 
+
+               var pyramidGeometry2 = new THREE.CylinderGeometry(1.0, 1.5, 1.0, 32, false); 
+
+               for(i = 0; i < pyramidGeometry2.faces.length; i++){ 
+                   if(pyramidGeometry2.faces[i] instanceof THREE.Face4){ 
+                       pyramidGeometry2.faces[i].vertexColors[0] = new THREE.Color(0x18ab3a); 
+                       if((i % 2) == 0){ 
+                           pyramidGeometry2.faces[i].vertexColors[1] = new THREE.Color(0x159432); 
+                           pyramidGeometry2.faces[i].vertexColors[2] = new THREE.Color(0x159432); 
+                       } else { 
+                           pyramidGeometry2.faces[i].vertexColors[1] = new THREE.Color(0x107327); 
+                           pyramidGeometry2.faces[i].vertexColors[2] = new THREE.Color(0x107327); 
+                       } 
+                       pyramidGeometry2.faces[i].vertexColors[3] = new THREE.Color(0x159432); 
+                   } else { 
+                       pyramidGeometry2.faces[i].vertexColors[0] = new THREE.Color(0x0a4d19); 
+                       pyramidGeometry2.faces[i].vertexColors[1] = new THREE.Color(0x107327); 
+                       pyramidGeometry2.faces[i].vertexColors[2] = new THREE.Color(0x159432); 
+                   } 
+               } 
+               var pyramidMaterial2 = new THREE.MeshBasicMaterial({ 
+                   vertexColors:THREE.VertexColors, 
+                   side:THREE.DoubleSide 
+               }); 
+               pyramidMesh2 = new THREE.Mesh(pyramidGeometry2, pyramidMaterial2); 
+               pyramidMesh2.position.set(-5.5, 1.8, 0.0); 
+               scene.add(pyramidMesh2);
+
+               var pyramidGeometry3 = new THREE.CylinderGeometry(0.0, 1.5, 1.5, 32, false); 
+
+               for(i = 0; i < pyramidGeometry3.faces.length; i++){ 
+                   if(pyramidGeometry3.faces[i] instanceof THREE.Face4){ 
+                       pyramidGeometry3.faces[i].vertexColors[0] = new THREE.Color(0x18ab3a); 
+                       if((i % 2) == 0){ 
+                           pyramidGeometry3.faces[i].vertexColors[1] = new THREE.Color(0x159432); 
+                           pyramidGeometry3.faces[i].vertexColors[2] = new THREE.Color(0x159432); 
+                       } else { 
+                           pyramidGeometry3.faces[i].vertexColors[1] = new THREE.Color(0x107327); 
+                           pyramidGeometry3.faces[i].vertexColors[2] = new THREE.Color(0x107327); 
+                       } 
+                       pyramidGeometry3.faces[i].vertexColors[3] = new THREE.Color(0x159432); 
+                   } else { 
+                       pyramidGeometry3.faces[i].vertexColors[0] = new THREE.Color(0x0a4d19); 
+                       pyramidGeometry3.faces[i].vertexColors[1] = new THREE.Color(0x107327); 
+                       pyramidGeometry3.faces[i].vertexColors[2] = new THREE.Color(0x159432); 
+                   } 
+               } 
+               var pyramidMaterial3 = new THREE.MeshBasicMaterial({ 
+                   vertexColors:THREE.VertexColors, 
+                   side:THREE.DoubleSide 
+               }); 
+               pyramidMesh3 = new THREE.Mesh(pyramidGeometry3, pyramidMaterial3); 
+               pyramidMesh3.position.set(-5.5, 3.0, 0.0); 
+               scene.add(pyramidMesh3); 
+           }
+
+           /**
+            * Animate the scene and call rendering.
+            */
+           function animateScene(){
+               //koło 1
+               circleMesh.rotation.z -= 0.05
+
+               //koło 2
+               circleMesh2.rotation.z -= 0.05
+
+               //przejazd przez scene
+               squareMesh2.position.x += 0.05
+               circleMesh.position.x += 0.05
+               circleMesh2.position.x += 0.05
+
+               // powrót na scene
+               if(circleMesh2.position.x >= 12){
+                    squareMesh2.position.x = -11.0
+                    circleMesh.position.x = -12.0
+                    circleMesh2.position.x = -10.0
+                }
+
+                //wirójąca choinka
+                pyramidMesh.rotation.y += 0.01; 
+
+                pyramidMesh2.rotation.y += 0.01; 
+
+                pyramidMesh3.rotation.y += 0.01; 
+
+               // Define the function, which is called by the browser supported timer loop. If the
+               // browser tab is not visible, the animation is paused. So 'animateScene()' is called
+               // in a browser controlled loop.
+               requestAnimationFrame(animateScene);
+
+               // Map the 3D scene down to the 2D screen (render the frame)
+               renderScene();
+           }
+
+           /**
+            * Render the scene. Map the 3D world to the 2D screen.
+            */
+           function renderScene(){
+               renderer.render(scene, camera);
+           }
+       </script>
+     </body>
+</html>
