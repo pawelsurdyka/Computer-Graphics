@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title></title>
+    <link rel="stylesheet" />
+</head>
+
+<body>
+    <div class="viewport"></div>
+
+    <script src="three.min.js"></script>
+    <script src="physi.js"></script>
+    //
+    <script src="OrbitControls.js"></script>
+    <script>
+        var container,
+            scene,
+            renderer,
+            camera,
+            light,
+            ball,
+            plane,
+            w1,
+            w2,
+            w3,
+            w4;
+        var WIDTH,
+            HEIGHT,
+            VIEW_ANGLE,
+            ASPECT,
+            NEAR,
+            FAR,
+            step = 0;
+
+        var clock = new THREE.Clock();
+
+        Physijs.scripts.worker = "physijs_worker.js";
+        Physijs.scripts.ammo = "ammo.js";
+
+        container = document.querySelector(".viewport");
+
+        (WIDTH = window.innerWidth), (HEIGHT = window.innerHeight);
+
+        (VIEW_ANGLE = 45),
+        (ASPECT = WIDTH / HEIGHT),
+        (NEAR = 1),
+        (FAR = 10000);
+
+        scene = new Physijs.Scene();
+        scene.setGravity(new THREE.Vector3(0, -100, 0));
+        scene.addEventListener("update", function() {
+            scene.simulate(undefined, 2);
+        });
+
+        renderer = new THREE.WebGLRenderer({
+            antialias: true,
+        });
+
+        renderer.setSize(WIDTH, HEIGHT);
+        renderer.shadowMapEnabled = true;
+        renderer.shadowMapSoft = true;
+        renderer.shadowMapType = THREE.PCFShadowMap;
+        renderer.shadowMapAutoUpdate = true;
+
+        container.appendChild(renderer.domElement);
+
+        camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
+
+        camera.position.set(60, 40, 120);
+        camera.lookAt(scene.position);
+        scene.add(camera);
+        //const controls = new OrbitControls( camera, renderer.domElement );
+
+        light = new THREE.DirectionalLight(0xffffff);
+
+        light.position.set(0, 100, 60);
+        light.castShadow = true;
+        light.shadowCameraLeft = -60;
+        light.shadowCameraTop = -60;
+        light.shadowCameraRight = 60;
+        light.shadowCameraBottom = 60;
+        light.shadowCameraNear = 1;
+        light.shadowCameraFar = 1000;
+        light.shadowBias = -0.0001;
+        light.shadowMapWidth = light.shadowMapHeight = 1024;
+        light.shadowDarkness = 0.7;
+
+        scene.add(light);
+        //controls.update();
+
+        plane = new Physijs.BoxMesh(
+            new THREE.CubeGeometry(100, 100, 2, 100, 100),
+            Physijs.createMaterial(
+                new THREE.MeshLambertMaterial({
+                    color: 0xeeeeee,
+                }),
+                0.4,
+                0.99
+            ),
+            0
+        );
+
+        plane.rotation.x = -Math.PI / 2;
+        plane.rotation.y = Math.PI / 24;
+        plane.receiveShadow = true;
+
+        scene.add(plane);
+
+        w1 = new Physijs.BoxMesh(
+            new THREE.CubeGeometry(1, 100, 100, 100, 100),
+            Physijs.createMaterial(
+                new THREE.MeshLambertMaterial({
+                    color: 0xeeaaaa,
+                    transparent: true,
+                    opacity: 0.3,
+                }),
+                0.4,
+                0.99
+            ),
+            0
+        );
+
+        w1.position.x = 50;
+        w1.receiveShadow = true;
+
+        scene.add(w1);
+
+        w2 = new Physijs.BoxMesh(
+            new THREE.CubeGeometry(100, 100, 1, 100, 100),
+            Physijs.createMaterial(
+                new THREE.MeshLambertMaterial({
+                    color: 0xeeaaaa,
+                }),
+                0.4,
+                0.99
+            ),
+            0
+        );
+
+        w2.position.z = -50;
+        w2.receiveShadow = true;
+
+        scene.add(w2);
+
+        w3 = new Physijs.BoxMesh(
+            new THREE.CubeGeometry(100, 100, 1, 100, 100),
+            Physijs.createMaterial(
+                new THREE.MeshLambertMaterial({
+                    color: 0xeeaaaa,
+                    transparent: true,
+                    opacity: 0.0,
+                }),
+                0.4,
+                0.99
+            ),
+            0
+        );
+
+        w3.position.z = 50;
+        w3.receiveShadow = true;
+
+        scene.add(w3);
+
+        w4 = new Physijs.BoxMesh(
+            new THREE.CubeGeometry(40, 50, 20, 100, 100),
+            Physijs.createMaterial(
+                new THREE.MeshLambertMaterial({
+                    color: 0xeeee77,
+                }),
+                0.4,
+                0.99
+            ),
+            0
+        );
+
+        w4.position.x = 40;
+        w4.receiveShadow = true;
+
+        scene.add(w4);
+
+        setInterval(function() {
+            ball = new Physijs.SphereMesh(
+                new THREE.SphereGeometry(Math.random() * (6 - 1) + 1, 6, 6),
+                Physijs.createMaterial(
+                    new THREE.MeshLambertMaterial({
+                        color: Math.random() * 0xffffff,
+                        reflectivity: Math.random(),
+                    }),
+                    0.4,
+                    0.99
+                ),
+                1
+            );
+
+            var r = {
+                x: Math.random() * (Math.PI - Math.PI / 12) + Math.PI / 12,
+                y: Math.random() * (Math.PI - Math.PI / 12) + Math.PI / 12,
+                z: Math.random() * (Math.PI - Math.PI / 12) + Math.PI / 12,
+            };
+
+            ball.rotation.set(r.x, r.y, r.z);
+            ball.position.set(10 * r.x, 50, 10 * r.z);
+            ball.castShadow = true;
+            ball.receiveShadow = true;
+
+            scene.add(ball);
+        }, 333);
+
+        render();
+        scene.simulate();
+
+        function render() {
+            for (var i = 5; i < scene.children.length - 5; i++) {
+                var obj = scene.children[i];
+
+                if (obj.position.y <= -50) {
+                    scene.remove(obj);
+                }
+            }
+
+            step += 0.06;
+            var sin = Math.sin(step);
+            w4.position.y = -10 + 20 * sin;
+            w4.position.z = Math.cos(step) * 20 - 10;
+            w4.__dirtyPosition = true;
+
+            renderer.render(scene, camera);
+            requestAnimationFrame(render);
+        }
+    </script>
+</body>
+
+</html>

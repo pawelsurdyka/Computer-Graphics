@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title></title>
+  <link rel="stylesheet" href="/css/main.css" />
+</head>
+<body>
+  
+  <div class="viewport"></div>
+
+  <script src="three.min.js"></script>
+  <script src="physi.js"></script>
+  <script>
+    var container, scene, renderer, camera, light, ball, group, box0, box1, box2, box3,box4, cube1, cube2, cube3;
+    var WIDTH, HEIGHT, VIEW_ANGLE, ASPECT, NEAR, FAR, step = 0, z_val = 0;
+
+    var clock = new THREE.Clock();
+
+    Physijs.scripts.worker = 'physijs_worker.js';
+    Physijs.scripts.ammo = 'ammo.js';
+
+    container = document.querySelector('.viewport');
+
+    WIDTH = window.innerWidth,
+    HEIGHT = window.innerHeight;
+
+    VIEW_ANGLE = 45,
+    ASPECT = WIDTH / HEIGHT,
+    NEAR = 1,
+    FAR = 10000;
+
+    scene = new Physijs.Scene();
+    scene.setGravity(new THREE.Vector3( 0, -50, 0 ));
+    scene.addEventListener('update', function() {
+      scene.simulate(undefined, 2);
+    });
+
+    renderer = new THREE.WebGLRenderer({
+      antialias: true
+    });
+
+    renderer.setSize(WIDTH, HEIGHT);
+    renderer.shadowMapEnabled = true;
+    renderer.shadowMapSoft = true;
+    renderer.shadowMapType = THREE.PCFShadowMap;
+    renderer.shadowMapAutoUpdate = true;
+
+    container.appendChild(renderer.domElement);
+
+    camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
+
+    camera.position.set(400, 40, 320);
+    camera.lookAt(scene.position);
+    scene.add(camera);
+
+    light = new THREE.DirectionalLight(0xffffff);
+
+    light.position.set(0, 100, 60);
+    light.castShadow = true;
+    light.shadowCameraLeft = -60;
+    light.shadowCameraTop = -60;
+    light.shadowCameraRight = 60;
+    light.shadowCameraBottom = 60;
+    light.shadowCameraNear = 1;
+    light.shadowCameraFar = 1000;
+    light.shadowBias = -.0001
+    light.shadowMapWidth = light.shadowMapHeight = 1024;
+    light.shadowDarkness = .7;
+
+    scene.add(light);
+
+    // light2 = new THREE.DirectionalLight(0xffffff);
+
+    // light2.position.set(500, 100, 60);
+    // light2.castShadow = true;
+    // light2.shadowCameraLeft = -60;
+    // light2.shadowCameraTop = -60;
+    // light2.shadowCameraRight = 60;
+    // light2.shadowCameraBottom = 60;
+    // light2.shadowCameraNear = 1;
+    // light2.shadowCameraFar = 1000;
+    // light2.shadowBias = -.0001
+    // light2.shadowMapWidth = light.shadowMapHeight = 1024;
+    // light2.shadowDarkness = .7;
+
+    // scene.add(light2);
+
+    box0 = new Physijs.BoxMesh(
+      new THREE.CubeGeometry(100, 100, 2, 10, 10),
+      Physijs.createMaterial(
+        new THREE.MeshLambertMaterial({
+          color: 0xeeeeee
+        }),
+        0.4,
+        0.99
+      ),
+      0
+    );
+
+    box0.receiveShadow = true;
+    box0.position.set(0,0,100);
+    box0.rotation.x = Math.PI / 2;
+    box0.rotation.y = - Math.PI / 2;
+
+    box1 = new Physijs.BoxMesh(
+      new THREE.CubeGeometry(100, 100, 2, 10, 10),
+      Physijs.createMaterial(
+        new THREE.MeshLambertMaterial({
+          color: 0xeeeeee
+        }),
+        0.4,
+        0.99
+      ),
+      0
+    );
+
+    box1.receiveShadow = true;
+    box1.position.set(50,0,50);
+
+
+    box2 = new Physijs.BoxMesh(
+      new THREE.CubeGeometry(100, 100, 2, 10, 10),
+      Physijs.createMaterial(
+        new THREE.MeshLambertMaterial({
+          color: 0xeeeeee
+        }),
+        0.4,
+        0.99
+      ),
+      0
+    );
+
+    box2.receiveShadow = true;
+    box2.position.set(50,0,150);
+
+
+    box3 = new Physijs.BoxMesh(
+      new THREE.CubeGeometry(100, 100, 2, 10, 10),
+      Physijs.createMaterial(
+        new THREE.MeshLambertMaterial({
+          color: 0xeeeeee
+        }),
+        0.4,
+        0.99
+      ),
+      0
+    );
+
+    box3.receiveShadow = true;
+    box3.position.set(100,0,100);
+    box3.rotation.x = Math.PI / 2;
+    box3.rotation.y = - Math.PI / 2;
+
+    box4 = new Physijs.BoxMesh(
+      new THREE.CubeGeometry(100, 100, 2, 10, 10),
+      Physijs.createMaterial(
+        new THREE.MeshLambertMaterial({
+          color: 0xeeeeee
+        }),
+        0.4,
+        0.99
+      ),
+      0
+    );
+
+    box4.receiveShadow = true;
+    box4.position.set(50,-50,100);
+    box4.rotation.x = Math.PI / 2;
+
+    group = new THREE.Object3D();
+    group.add(box0);
+    group.add(box1);
+    group.add(box2);
+    group.add(box3);
+    group.add(box4);
+    group.rotation.z = - Math.PI / 4;
+    scene.add(group);
+
+    
+    render();
+    scene.simulate()
+
+    function render() {
+      for (var i = 5; i < scene.children.length - 5; i++) {
+        var obj = scene.children[i];
+
+        if (obj.position.y <= -300) {
+         scene.remove(obj);
+        }
+      }
+      step += 0.01;
+      var sin = Math.sin(step);
+
+      renderer.render(scene, camera);
+      requestAnimationFrame(render);
+    }
+  </script>
+</body>
+</html>

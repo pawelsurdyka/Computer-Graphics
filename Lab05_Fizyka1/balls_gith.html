@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title></title>
+    <link rel="stylesheet" href="/css/main.css" />
+  </head>
+  <body>
+    <div class="viewport"></div>
+
+    <script src="three.min.js"></script>
+    <script src="physi.js"></script>
+    <script>
+      var addPlane = (color, friction, restitution, w, h, d, position, rot_x, rot_y, rot_z) => {
+        plane = new Physijs.BoxMesh(
+          new THREE.CubeGeometry(w, h, d, 10, 10),
+          Physijs.createMaterial(
+            new THREE.MeshLambertMaterial({
+              color: color,
+            }),
+            friction,
+            restitution,
+          ),
+          0
+        );
+        
+        plane.position.copy(position)
+        plane.rotation.x = rot_x;
+        plane.rotation.y = rot_y;
+        plane.rotation.z = rot_z;
+        plane.receiveShadow = true;
+
+        scene.add(plane);
+        return plane;
+      };
+
+      var addOpenBox = (color, friction, restitution, position) => {
+        addPlane(
+          color, friction, restitution, 40, 12, 2, 
+          new THREE.Vector3(position.x, position.y - 5, position.z - 9), 0, 0, 0
+        );
+
+        addPlane(
+          color, friction, restitution, 40, 12, 2, 
+          new THREE.Vector3(position.x, position.y - 5, position.z + 9), 0, 0, 0
+        );
+
+        addPlane(
+          color, friction, restitution, 12, 20, 2, 
+          new THREE.Vector3(position.x - 19, position.y - 5, position.z), Math.PI / 2, Math.PI / 2, 0
+        );
+
+        addPlane(
+          color, friction, restitution, 12, 20, 2, 
+          new THREE.Vector3(position.x + 19, position.y - 5, position.z), Math.PI / 2, Math.PI / 2, 0
+        );
+
+        addPlane(
+          color, friction, restitution, 40, 20, 2, 
+          new THREE.Vector3(position.x, position.y - 10, position.z), Math.PI / 2, 0, 0
+        );
+      }
+
+      var container, scene, renderer, camera, light, ball, plane0;
+      var WIDTH, HEIGHT, VIEW_ANGLE, ASPECT, NEAR, FAR;
+
+      var clock = new THREE.Clock();
+
+      Physijs.scripts.worker = "physijs_worker.js";
+      Physijs.scripts.ammo = "ammo.js";
+
+      container = document.querySelector(".viewport");
+
+      (WIDTH = window.innerWidth), (HEIGHT = window.innerHeight);
+
+      (VIEW_ANGLE = 45), (ASPECT = WIDTH / HEIGHT), (NEAR = 1), (FAR = 10000);
+
+      scene = new Physijs.Scene();
+      scene.setGravity(new THREE.Vector3(0, -50, 0));
+      scene.addEventListener("update", function () {
+        scene.simulate(undefined, 2);
+      });
+
+      renderer = new THREE.WebGLRenderer({
+        antialias: true,
+      });
+
+      renderer.setSize(WIDTH, HEIGHT);
+      renderer.shadowMapEnabled = true;
+      renderer.shadowMapSoft = true;
+      renderer.shadowMapType = THREE.PCFShadowMap;
+      renderer.shadowMapAutoUpdate = true;
+
+      container.appendChild(renderer.domElement);
+
+      camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
+
+      camera.position.set(60, 40, 120);
+      camera.lookAt(new THREE.Vector3(-20, -10, 0));
+      scene.add(camera);
+
+      light = new THREE.DirectionalLight(0xffffff);
+
+      light.position.set(0, 100, 60);
+      light.castShadow = true;
+      light.shadowCameraLeft = -60;
+      light.shadowCameraTop = -60;
+      light.shadowCameraRight = 60;
+      light.shadowCameraBottom = 60;
+      light.shadowCameraNear = 1;
+      light.shadowCameraFar = 1000;
+      light.shadowBias = -0.0001;
+      light.shadowMapWidth = light.shadowMapHeight = 1024;
+      light.shadowDarkness = 0.7;
+
+      scene.add(light);
+
+      var plane0 = addPlane(
+        0x6688cc, 0.4, 0.99, 30, 30, 2, 
+        new THREE.Vector3(-80, 10, 0), Math.PI / 2, - Math.PI / 10, 0
+      );
+
+      var plane1 = addPlane(
+        0xff88cc, 0.4, 0.99, 20, 40, 2, 
+        new THREE.Vector3(-80, -50, 0), Math.PI / 2, - Math.PI / 8, 0
+      );
+
+      var plane2 = addPlane(
+        0xff88cc, 0.4, 0.99, 20, 40, 2, 
+        new THREE.Vector3(10, -50, 0), Math.PI / 2, Math.PI / 10, 0
+      );
+
+      var plane3 = addPlane(
+        0xff88cc, 0.4, 0.99, 40, 20, 2, 
+        new THREE.Vector3(-30, -50, 30), 9 * Math.PI / 20, 0, 0
+      );
+
+      var plane4 = addPlane(
+        0xff88cc, 0.4, 0.99, 40, 20, 2, 
+        new THREE.Vector3(-30, -50, -30), -9 *Math.PI / 20, 0, 0
+      );
+
+      var box = addOpenBox(0x88ffbb, 0, 0, new THREE.Vector3(-30, -20, 0));
+
+      setInterval(function () {
+        ball = new Physijs.SphereMesh(
+          new THREE.SphereGeometry(Math.random() * (4 - 1) + 1, 16, 16),
+          Physijs.createMaterial(
+            new THREE.MeshLambertMaterial({
+              color: 0xff0000,
+              reflectivity: 0.8,
+            }),
+            0.4,
+            0.99
+          ),
+          1
+        );
+
+        var r = {
+          x: Math.random() * (Math.PI - Math.PI / 12) + Math.PI / 12,
+          y: Math.random() * (Math.PI - Math.PI / 12) + Math.PI / 12,
+          z: Math.random() * (Math.PI - Math.PI / 12) + Math.PI / 12,
+        };
+
+        ball.rotation.set(r.x, r.y, r.z);
+        ball.position.y = 60;
+        ball.position.x = -80;
+        ball.castShadow = true;
+        ball.receiveShadow = true;
+
+        scene.add(ball);
+      }, 600);
+
+      var angle = 0;
+
+      render();
+      scene.simulate();
+
+      function render() {
+        angle += 0.01;
+
+        for (var i = 5; i < scene.children.length - 5; i++) {
+          var obj = scene.children[i];
+          
+          //if (obj.position.y <= -50) {
+          //  scene.remove(obj);
+          //}
+        }
+        //plane0.rotation.x = angle;
+        plane1.rotation.z = angle;
+        plane2.rotation.z = angle;
+        plane3.rotation.z = angle;
+        plane4.rotation.z = angle;
+        //scene.add(plane1);
+        // scene.add(plane2);
+        // scene.add(plane3);
+        // scene.add(plane4);
+
+        //console.log(plane1.rotation.x)
+
+        renderer.render(scene, camera);
+        requestAnimationFrame(render);
+      }
+    </script>
+  </body>
+</html>
